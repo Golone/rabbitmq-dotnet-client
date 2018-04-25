@@ -76,6 +76,7 @@ namespace RabbitMQ.Client.MessagePatterns
     public class Subscription : ISubscription
     {
         protected readonly object m_eventLock = new object();
+        protected readonly object m_basicCancelLock = new object();
         protected volatile EventingBasicConsumer m_consumer;
         private BlockingCollection<BasicDeliverEventArgs> m_queue = 
             new BlockingCollection<BasicDeliverEventArgs>(new ConcurrentQueue<BasicDeliverEventArgs>());
@@ -237,7 +238,10 @@ namespace RabbitMQ.Client.MessagePatterns
                 {
                     if (Model.IsOpen)
                     {
-                        Model.BasicCancel(ConsumerTag);
+                        lock(m_basicCancelLock)
+                        {
+                            Model.BasicCancel(ConsumerTag);
+                        }
                     }
 
                     ConsumerTag = null;
