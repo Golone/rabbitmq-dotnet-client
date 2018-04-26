@@ -72,6 +72,7 @@ namespace RabbitMQ.Client.Impl
         private readonly object m_eventLock = new object();
         private readonly object m_flowSendLock = new object();
         private readonly object m_shutdownLock = new object();
+        private readonly object _rpcLock = new object();
 
         private readonly SynchronizedList<ulong> m_unconfirmedSet = new SynchronizedList<ulong>();
 
@@ -1146,10 +1147,12 @@ namespace RabbitMQ.Client.Impl
         {
             var k = new BasicConsumerRpcContinuation { m_consumerTag = consumerTag };
 
-            Enqueue(k);
-
-            _Private_BasicCancel(consumerTag, false);
-            k.GetReply(this.ContinuationTimeout);
+            lock(_rpcLock)
+            {
+                Enqueue(k);
+                _Private_BasicCancel(consumerTag, false);
+                k.GetReply(this.ContinuationTimeout);
+            }
             lock (m_consumers)
             {
                 m_consumers.Remove(consumerTag);

@@ -237,10 +237,7 @@ namespace RabbitMQ.Client.MessagePatterns
                 {
                     if (Model.IsOpen)
                     {
-                        lock(Model)
-                        {
-                            Model.BasicCancel(ConsumerTag);
-                        }
+                        Model.BasicCancel(ConsumerTag);
                     }
 
                     ConsumerTag = null;
